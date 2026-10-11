@@ -1,0 +1,1 @@
+Icon logos are from [Skill Icons](https://github.com/tandpfun/skill-icons) (MIT; license included). LangChain and LangGraph logos are from [Simple Icons](https://github.com/simple-icons/simple-icons) ([CC0](https://creativecommons.org/publicdomain/zero/1.0/)). Editorial chip styling is local to this profile.

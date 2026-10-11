@@ -1,7 +1,7 @@
-"""Render the profile banner. Requires Pillow and macOS's Didot/Menlo fonts.
+"""Render the banner and profile animation. Requires Pillow and macOS fonts.
 
 Run from anywhere: python3 scripts/generate_assets.py
-The PNG is also the reduced-motion fallback for the animated GIF.
+Each PNG is a reduced-motion fallback for its animated GIF.
 """
 
 from math import cos, pi, sin
@@ -73,6 +73,47 @@ def base_image():
     return image
 
 
+def indexed_frame(image, palette):
+    indexed = image.quantize(palette=palette, dither=Image.Dither.NONE)
+    white_mask = image.convert("L").point(lambda value: 255 if value == 255 else 0)
+    indexed.paste(223, mask=white_mask)
+    return indexed
+
+
+def profile_animation(palette):
+    frames = []
+    corners = [(x, y, z) for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)]
+    edges = [(a, b) for a in range(8) for b in range(a + 1, 8)
+             if sum(corners[a][axis] != corners[b][axis] for axis in range(3)) == 1]
+    for frame in range(72):
+        image = Image.new("RGB", (420, 420), PAPER)
+        draw = ImageDraw.Draw(image)
+        for x in range(66, 355, 24):
+            for y in range(66, 355, 24):
+                draw.ellipse((x, y, x + 1, y + 1), fill="#e2e5e9")
+        theta = 2 * pi * frame / 72
+        points = []
+        for x, y, z in corners:
+            rx, rz = x * cos(theta) + z * sin(theta), -x * sin(theta) + z * cos(theta)
+            ry, depth = y * cos(0.45) - rz * sin(0.45), y * sin(0.45) + rz * cos(0.45)
+            scale = 78 / (1 + depth * 0.12)
+            points.append((210 + rx * scale, 193 + ry * scale, depth))
+        for a, b in sorted(edges, key=lambda edge: points[edge[0]][2] + points[edge[1]][2], reverse=True):
+            color = "#c3ccd9" if points[a][2] + points[b][2] > 0 else ACCENT
+            draw.line(points[a][:2] + points[b][:2], fill=color, width=3)
+        for x, y, depth in points:
+            draw.ellipse((x - 4, y - 4, x + 4, y + 4),
+                         fill=ACCENT if depth < 0 else "#b5bfce")
+        text = "SYSTEMS IN MOTION"
+        draw.text((210, 365), text, font=SMALL, fill=MUTED, anchor="mt")
+        if frame == 0:
+            image.save(ASSETS / "profile.png", optimize=True)
+        frames.append(indexed_frame(image, palette))
+    frames[0].save(ASSETS / "profile.gif", save_all=True,
+                   append_images=frames[1:], duration=90, loop=0,
+                   optimize=True, disposal=1)
+
+
 def main():
     ASSETS.mkdir(exist_ok=True)
     base = base_image()
@@ -96,14 +137,12 @@ def main():
         draw.ellipse((x - 5, y - 5, x + 5, y + 5), fill=ACCENT)
         if frame == 0:
             image.save(ASSETS / "header.png", optimize=True)
-        indexed = image.quantize(palette=palette, dither=Image.Dither.NONE)
-        white_mask = image.convert("L").point(lambda value: 255 if value == 255 else 0)
-        indexed.paste(223, mask=white_mask)
-        frames.append(indexed)
+        frames.append(indexed_frame(image, palette))
     frames[0].save(ASSETS / "header.gif", save_all=True,
                    append_images=frames[1:], duration=80, loop=0,
                    optimize=True, disposal=1)
-    print("Generated assets/header.png and assets/header.gif")
+    profile_animation(palette)
+    print("Generated header and profile assets (PNG + GIF)")
 
 
 if __name__ == "__main__":
