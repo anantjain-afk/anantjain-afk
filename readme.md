@@ -1,6 +1,11 @@
 <picture>
-  <source media="(max-width: 600px)" srcset="./assets/cover-mobile.png">
-  <img src="./assets/cover.png" width="100%" alt="Anant Jain. Backend, AI engineering, and full-stack development. AI undergraduate at Newton School of Technology, Rishihood University, 2024–2028.">
+  <source media="(prefers-reduced-motion: reduce)" srcset="./assets/header.png">
+  <img src="./assets/header.gif" width="100%" alt="Anant Jain. Backend, AI, and full-stack engineering. Animated orbital diagram.">
+</picture>
+
+<picture>
+  <source media="(max-width: 600px)" srcset="./assets/tagline-mobile.png">
+  <img src="./assets/tagline.png" width="100%" alt="Building systems. Exploring intelligence. AI undergraduate at Newton School of Technology, Rishihood University, 2024–2028.">
 </picture>
 
 <!-- Full-width contact panel. Contact values and the animated illustration can be edited in scripts/generate_assets.py. Website and Twitter / X are intentionally blank. -->
